@@ -129,11 +129,21 @@ export default function Home() {
     }
 
     const exportJSON = () => {
+        // 根据上传的文件名生成 JSON 文件名
+        let filename = 'tweets.json'
+        if (files.length === 1) {
+            // 单个文件：用该文件名
+            filename = files[0].name.replace('.html', '.json')
+        } else if (files.length > 1) {
+            // 多个文件：用第一个文件名加 _etc
+            filename = files[0].name.replace('.html', '_etc.json')
+        }
+
         const blob = new Blob([JSON.stringify(tweets, null, 2)], { type: 'application/json' })
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = 'tweets.json'
+        a.download = filename
         a.click()
     }
 
