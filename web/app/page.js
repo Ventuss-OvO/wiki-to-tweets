@@ -40,6 +40,8 @@ export default function Home() {
     const [progress, setProgress] = useState({ current: 0, total: 0, filename: '' })
     const [toast, setToast] = useState(null)
     const [error, setError] = useState(null)
+    const [filesExpanded, setFilesExpanded] = useState(false)
+    const [expandedResults, setExpandedResults] = useState({})
     const fileInputRef = useRef(null)
 
     const showToast = (message, type = 'info') => {
@@ -175,13 +177,12 @@ export default function Home() {
     return (
         <div className="container">
             <header>
-                <h1>🌸 Wiki → Twitter 动态生成器</h1>
-                <p>上传 Fandom Wiki HTML，使用 AI 自动生成 Twitter 风格动态</p>
+                <h1>🌸 Wiki → Twitter 动态生成器 <span>上传 Fandom Wiki HTML，使用 AI 自动生成 Twitter 风格动态</span></h1>
             </header>
 
             <div className="main-grid">
                 {/* Left Panel - Upload & Prompt */}
-                <div>
+                <div style={{ minWidth: 0 }}>
                     {/* Upload */}
                     <div className="panel">
                         <div className="panel-title">
@@ -194,8 +195,10 @@ export default function Home() {
                             onDrop={handleDrop}
                         >
                             <div className="icon">📄</div>
-                            <p>拖拽文件到这里，或点击选择</p>
-                            <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>支持批量上传 .html 文件</p>
+                            <div className="upload-text">
+                                <p>拖拽文件到这里，或点击选择</p>
+                                <p className="hint">支持批量上传 .html 文件</p>
+                            </div>
                         </div>
                         <input
                             ref={fileInputRef}
@@ -208,22 +211,59 @@ export default function Home() {
 
                         {files.length > 0 && (
                             <div style={{ marginTop: 16 }}>
-                                {files.map((f, i) => (
-                                    <div key={i} style={{
+                                <div
+                                    onClick={() => setFilesExpanded(!filesExpanded)}
+                                    style={{
                                         padding: '10px 14px',
                                         background: 'var(--bg)',
                                         borderRadius: 8,
-                                        marginBottom: 8,
                                         display: 'flex',
                                         justifyContent: 'space-between',
-                                        alignItems: 'center'
+                                        alignItems: 'center',
+                                        cursor: 'pointer',
+                                        userSelect: 'none'
+                                    }}
+                                >
+                                    <span style={{ fontWeight: 600 }}>
+                                        {filesExpanded ? '▼' : '▶'} 已上传 {files.length} 个文件
+                                    </span>
+                                    <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                                        {(files.reduce((sum, f) => sum + f.size, 0) / 1024).toFixed(1)} KB
+                                    </span>
+                                </div>
+                                {filesExpanded && (
+                                    <div style={{
+                                        maxHeight: 150,
+                                        overflowY: 'auto',
+                                        overflowX: 'hidden',
+                                        marginTop: 8
                                     }}>
-                                        <span>📄 {f.name}</span>
-                                        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                                            {(f.size / 1024).toFixed(1)} KB
-                                        </span>
+                                        {files.map((f, i) => (
+                                            <div key={i} style={{
+                                                padding: '6px 14px 6px 28px',
+                                                background: 'var(--bg)',
+                                                borderRadius: 6,
+                                                marginBottom: 4,
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                fontSize: 13,
+                                                minWidth: 0
+                                            }}>
+                                                <span style={{
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: 'nowrap',
+                                                    minWidth: 0,
+                                                    flex: 1
+                                                }}>📄 {f.name}</span>
+                                                <span style={{ fontSize: 12, color: 'var(--text-secondary)', flexShrink: 0, marginLeft: 8 }}>
+                                                    {(f.size / 1024).toFixed(1)} KB
+                                                </span>
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
+                                )}
                             </div>
                         )}
                     </div>
@@ -232,6 +272,18 @@ export default function Home() {
                     <div className="panel">
                         <div className="panel-title">
                             <span>✨</span> Prompt 设置
+                            <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'center' }}>
+                                <button className="btn btn-secondary btn-small" onClick={() => setPrompt(DEFAULT_PROMPT)}>
+                                    重置默认
+                                </button>
+                                <button
+                                    className="btn btn-primary btn-small"
+                                    onClick={generateAllTweets}
+                                    disabled={loading || files.length === 0}
+                                >
+                                    {loading ? '⏳ 生成中...' : `🚀 生成 (${files.length})`}
+                                </button>
+                            </div>
                         </div>
                         <div className="prompt-editor">
                             <textarea
@@ -240,26 +292,11 @@ export default function Home() {
                                 placeholder="编辑 Prompt..."
                             />
                         </div>
-                        <div style={{ marginTop: 12, display: 'flex', gap: 10 }}>
-                            <button className="btn btn-secondary btn-small" onClick={() => setPrompt(DEFAULT_PROMPT)}>
-                                重置默认
-                            </button>
-                        </div>
-                        <div style={{ marginTop: 20 }}>
-                            <button
-                                className="btn btn-primary"
-                                onClick={generateAllTweets}
-                                disabled={loading || files.length === 0}
-                                style={{ width: '100%', justifyContent: 'center' }}
-                            >
-                                {loading ? '⏳ 生成中...' : `🚀 生成推文 (${files.length} 个文件)`}
-                            </button>
-                        </div>
                     </div>
                 </div>
 
                 {/* Right Panel - Results */}
-                <div>
+                <div style={{ minWidth: 0 }}>
                     <div className="panel" style={{ minHeight: 500 }}>
                         <div className="panel-title">
                             <span>🐦</span> 生成结果
@@ -336,38 +373,76 @@ export default function Home() {
                             </div>
                         ) : tweets.length > 0 ? (
                             <div>
+                                {/* 结果汇总 */}
+                                <div style={{
+                                    padding: '12px 14px',
+                                    background: 'var(--bg)',
+                                    borderRadius: 8,
+                                    marginBottom: 16,
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}>
+                                    <span style={{ fontWeight: 600 }}>
+                                        ✅ 已生成 {tweets.length} 个文件的结果
+                                    </span>
+                                    <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
+                                        共 {totalTweets} 条推文
+                                    </span>
+                                </div>
+
                                 {tweets.map((file, fi) => (
-                                    <div key={fi} style={{ marginBottom: 24 }}>
-                                        <div style={{
-                                            fontSize: 16,
-                                            fontWeight: 700,
-                                            marginBottom: 12,
-                                            padding: '8px 12px',
-                                            background: 'var(--bg)',
-                                            borderRadius: 8,
-                                            borderLeft: '3px solid var(--primary)'
-                                        }}>
-                                            📄 {file.filename}
-                                            <span style={{ color: 'var(--text-secondary)', fontWeight: 400, marginLeft: 8 }}>
-                                                ({file.tweets.length} 条)
+                                    <div key={fi} style={{ marginBottom: 12 }}>
+                                        <div
+                                            onClick={() => setExpandedResults(prev => ({
+                                                ...prev,
+                                                [fi]: !prev[fi]
+                                            }))}
+                                            style={{
+                                                fontSize: 15,
+                                                fontWeight: 600,
+                                                padding: '10px 12px',
+                                                background: 'var(--bg)',
+                                                borderRadius: 8,
+                                                borderLeft: '3px solid var(--primary)',
+                                                cursor: 'pointer',
+                                                userSelect: 'none',
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center'
+                                            }}
+                                        >
+                                            <span style={{
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap'
+                                            }}>
+                                                {expandedResults[fi] ? '▼' : '▶'} 📄 {file.filename}
+                                            </span>
+                                            <span style={{ color: 'var(--text-secondary)', fontWeight: 400, fontSize: 13, flexShrink: 0, marginLeft: 8 }}>
+                                                {file.tweets.length} 条
                                             </span>
                                         </div>
-                                        {file.tweets.map((tweet, ti) => (
-                                            <div className="tweet-card" key={ti}>
-                                                <div className="tweet-header">
-                                                    <div className="tweet-number">{ti + 1}</div>
-                                                    <div className="tweet-actions">
-                                                        <button className="tweet-action" onClick={() => copyTweet(tweet)}>📋 复制</button>
+                                        {expandedResults[fi] && (
+                                            <div style={{ marginTop: 8 }}>
+                                                {file.tweets.map((tweet, ti) => (
+                                                    <div className="tweet-card" key={ti}>
+                                                        <div className="tweet-header">
+                                                            <div className="tweet-number">{ti + 1}</div>
+                                                            <div className="tweet-actions">
+                                                                <button className="tweet-action" onClick={() => copyTweet(tweet)}>📋 复制</button>
+                                                            </div>
+                                                        </div>
+                                                        <div className="tweet-content">{tweet}</div>
+                                                        <div className="tweet-meta">
+                                                            <span className={`char-count ${tweet.length > 280 ? 'error' : tweet.length > 250 ? 'warning' : ''}`}>
+                                                                {tweet.length}/280
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div className="tweet-content">{tweet}</div>
-                                                <div className="tweet-meta">
-                                                    <span className={`char-count ${tweet.length > 280 ? 'error' : tweet.length > 250 ? 'warning' : ''}`}>
-                                                        {tweet.length}/280
-                                                    </span>
-                                                </div>
+                                                ))}
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
                                 ))}
 
