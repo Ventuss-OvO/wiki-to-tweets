@@ -3,3 +3,9 @@ node_modules
 credential.json
 .env
 .env.local
+.DS_Store
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!next.config.js

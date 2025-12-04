@@ -1,0 +1,14 @@
+{
+  "name": "ai-scrpit",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+   },
+  "dependencies": {
+    "@ai-sdk/google": "^2.0.32",
+    "@ai-sdk/google-vertex": "^3.0.63",
+    "ai": "^5.0.93"
+  }
+}
