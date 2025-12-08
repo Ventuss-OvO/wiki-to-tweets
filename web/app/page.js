@@ -152,13 +152,15 @@ export default function Home() {
         }
 
         // 转换为新的扁平格式: { id, ip, content }
+        // IP 根据文件名确定（去掉 .html 后缀）
         const flatTweets = []
         let tweetId = 1
         for (const file of tweets) {
+            const ip = file.filename.replace('.html', '')
             for (const tweet of file.tweets) {
                 flatTweets.push({
                     id: tweetId++,
-                    ip: 'Hinatazaka46',
+                    ip: ip,
                     content: tweet
                 })
             }
