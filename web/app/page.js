@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 
-const DEFAULT_PROMPT = `你是一个专业的偶像粉丝账号运营者。我会给你一个 Fandom Wiki 页面的 HTML 内容，请根据其中的信息，生成 8-10 条 Twitter 风格的动态（推文）。
+const DEFAULT_PROMPT = `你是一个专业的偶像粉丝账号运营者。我会给你一个 Fandom Wiki 页面的 HTML 内容，请根据其中的信息，生成至少 10 条 Twitter 风格的动态（推文）。
 
 Wiki HTML 内容：
 {html_content}
@@ -27,7 +27,7 @@ Wiki HTML 内容：
    - 如果有应援色，可以说明
 5. 使用日文撰写
 6. 每条推文用 "---" 分隔
-7. 必须生成至少8条不同角度的推文
+7. 必须生成至少10条不同角度的推文
 8. 不要加hashtag
 
 请直接输出推文内容，不要输出其他解释。`
